@@ -51,7 +51,7 @@ module Authie
     end
 
     before_destroy do
-      cookies.delete(:user_session) if controller
+      cookies.delete(:user_session, domain: Authie.config.cookie_domain) if controller
     end
 
     # Return the user that
@@ -89,10 +89,11 @@ module Authie
     # Sets the cookie on the associated controller.
     def set_cookie!
       cookies[:user_session] = {
-        :value => self.temporary_token,
-        :secure => controller.request.ssl?,
-        :httponly => true,
-        :expires => self.expires_at
+        value: self.temporary_token,
+        secure: controller.request.ssl?,
+        httponly: true,
+        expires: self.expires_at,
+        domain: Authie.config.cookie_domain
       }
       Authie.config.events.dispatch(:session_cookie_updated, self)
       true
@@ -125,10 +126,10 @@ module Authie
           raise InactiveSession, "Non-persistent session has expired"
         end
 
-        if self.host && self.host != controller.request.host
+        if self.host && self.host != controller.request.domain
           invalidate!
           Authie.config.events.dispatch(:host_mismatch_error, self)
-          raise HostMismatch, "Session was created on #{self.host} but accessed using #{controller.request.host}"
+          raise HostMismatch, "Session was created on #{self.host} but accessed using #{controller.request.domain}"
         end
       end
     end
@@ -170,7 +171,7 @@ module Authie
       self.active = false
       self.save!
       if controller
-        cookies.delete(:user_session)
+        cookies.delete(:user_session, domain: Authie.config.cookie_domain)
       end
       Authie.config.events.dispatch(:session_invalidated, self)
       true
@@ -282,7 +283,7 @@ module Authie
       session.browser_id = cookies[:browser_id]
       session.login_at = Time.now
       session.login_ip = controller.request.ip
-      session.host = controller.request.host
+      session.host = controller.request.domain
       session.save!
       Authie.config.events.dispatch(:start_session, session)
       session

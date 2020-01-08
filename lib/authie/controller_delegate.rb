@@ -14,10 +14,11 @@ module Authie
         proposed_browser_id = SecureRandom.uuid
         unless Authie::Session.where(:browser_id => proposed_browser_id).exists?
           cookies[Authie.config.browser_id_cookie_name] = {
-            :value => proposed_browser_id,
-            :expires => 5.years.from_now,
-            :httponly => true,
-            :secure => @controller.request.ssl?
+            value: proposed_browser_id,
+            expires: 5.years.from_now,
+            httponly: true,
+            secure: @controller.request.ssl?,
+            domain: Authie.config.cookie_domain
           }
           # Dispatch an event when the browser ID is set.
           Authie.config.events.dispatch(:set_browser_id, proposed_browser_id)

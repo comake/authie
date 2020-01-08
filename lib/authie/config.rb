@@ -31,6 +31,11 @@ module Authie
     end
     attr_writer :browser_id_cookie_name
 
+    def cookie_domain
+      @cookie_domain
+    end
+    attr_writer :cookie_domain
+
     def events
       @event_manager ||= EventManager.new
     end
