@@ -36,6 +36,12 @@ module Authie
     end
     attr_writer :cookie_domain
 
+    def default_controller_host
+      @default_controller_host
+    end
+    attr_writer :default_controller_host
+
+
     def events
       @event_manager ||= EventManager.new
     end

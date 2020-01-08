@@ -126,10 +126,10 @@ module Authie
           raise InactiveSession, "Non-persistent session has expired"
         end
 
-        if self.host && self.host != controller.request.domain
+        if self.host && self.host != (Authie.config.default_controller_host || controller.request.domain)
           invalidate!
           Authie.config.events.dispatch(:host_mismatch_error, self)
-          raise HostMismatch, "Session was created on #{self.host} but accessed using #{controller.request.domain}"
+          raise HostMismatch, "Session was created on #{self.host} but accessed using #{Authie.config.default_controller_host || controller.request.domain}"
         end
       end
     end
@@ -283,7 +283,7 @@ module Authie
       session.browser_id = cookies[:browser_id]
       session.login_at = Time.now
       session.login_ip = controller.request.ip
-      session.host = controller.request.domain
+      session.host = Authie.config.default_controller_host || controller.request.domain
       session.save!
       Authie.config.events.dispatch(:start_session, session)
       session
