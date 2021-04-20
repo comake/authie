@@ -93,7 +93,8 @@ module Authie
         secure: controller.request.ssl?,
         httponly: true,
         expires: self.expires_at,
-        domain: Authie.config.cookie_domain
+        domain: Authie.config.cookie_domain,
+        same_site: Authie.config.cookie_same_site
       }
       Authie.config.events.dispatch(:session_cookie_updated, self)
       true
@@ -102,7 +103,7 @@ module Authie
     # Check the security of the session to ensure it can be used.
     def check_security!
       if controller
-        if cookies[:browser_id] != self.browser_id
+        if cookies[Authie.config.browser_id_cookie_name] != self.browser_id
           invalidate!
           Authie.config.events.dispatch(:browser_id_mismatch_error, self)
           raise BrowserMismatch, "Browser ID mismatch"
@@ -127,6 +128,11 @@ module Authie
         end
 
         if self.host && self.host != (Authie.config.default_controller_host || controller.request.domain)
+          p "invalidating session dues to host mismatch"
+          p self.host
+          p Authie.config.default_controller_host
+          p controller.request.domain
+
           invalidate!
           Authie.config.events.dispatch(:host_mismatch_error, self)
           raise HostMismatch, "Session was created on #{self.host} but accessed using #{Authie.config.default_controller_host || controller.request.domain}"
@@ -274,13 +280,13 @@ module Authie
     # Any other sessions for the browser will be invalidated.
     def self.start(controller, params = {})
       cookies = controller.send(:cookies)
-      self.active.where(:browser_id => cookies[:browser_id]).each(&:invalidate!)
+      self.active.where(:browser_id => cookies[Authie.config.browser_id_cookie_name]).each(&:invalidate!)
       user_object = params.delete(:user)
 
       session = self.new(params)
       session.user = user_object
       session.controller = controller
-      session.browser_id = cookies[:browser_id]
+      session.browser_id = cookies[Authie.config.browser_id_cookie_name]
       session.login_at = Time.now
       session.login_ip = controller.request.ip
       session.host = Authie.config.default_controller_host || controller.request.domain

@@ -27,10 +27,12 @@ module Authie
       until cookies[:browser_id]
         proposed_browser_id = SecureRandom.uuid
         unless Session.where(:browser_id => proposed_browser_id).exists?
-          cookies[:browser_id] = {
+          cookies[Authie.config.browser_id_cookie_name] = {
             value: proposed_browser_id,
             expires: 20.years.from_now,
-            domain: Authie.config.cookie_domain
+            secure: @request.ssl?,
+            domain: Authie.config.cookie_domain,
+            same_site: Authie.config.cookie_same_site
           }
         end
       end

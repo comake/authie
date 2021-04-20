@@ -18,7 +18,8 @@ module Authie
             expires: 5.years.from_now,
             httponly: true,
             secure: @controller.request.ssl?,
-            domain: Authie.config.cookie_domain
+            domain: Authie.config.cookie_domain,
+            same_site: Authie.config.cookie_same_site
           }
           # Dispatch an event when the browser ID is set.
           Authie.config.events.dispatch(:set_browser_id, proposed_browser_id)

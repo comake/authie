@@ -36,6 +36,11 @@ module Authie
     end
     attr_writer :cookie_domain
 
+    def cookie_same_site
+      @cookie_same_site || 'strict'
+    end
+    attr_writer :cookie_same_site
+
     def default_controller_host
       @default_controller_host
     end
