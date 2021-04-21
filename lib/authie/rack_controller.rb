@@ -25,7 +25,7 @@ module Authie
 
     # Set a random browser ID for this browser.
     def set_browser_id
-      until cookies[:browser_id]
+      until cookies[Authie.config.browser_id_cookie_name]
         proposed_browser_id = SecureRandom.uuid
         unless Session.where(browser_id: proposed_browser_id).exists?
           cookies[Authie.config.browser_id_cookie_name] = {

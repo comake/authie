@@ -11,7 +11,6 @@ module Authie
     def session_inactivity_timeout
       @session_inactivity_timeout || 12.hours
     end
-    attr_writer :session_inactivity_timeout, :persistent_session_length, :sudo_session_timeout, :browser_id_cookie_name
 
     def persistent_session_length
       @persistent_session_length || 2.months
@@ -32,17 +31,18 @@ module Authie
     def cookie_domain
       @cookie_domain
     end
-    attr_writer :cookie_domain
 
     def cookie_same_site
-      @cookie_same_site || 'strict'
+      @cookie_same_site
     end
-    attr_writer :cookie_same_site
 
     def default_controller_host
       @default_controller_host
     end
-    attr_writer :default_controller_host
+
+    attr_writer :session_inactivity_timeout, :persistent_session_length,
+      :sudo_session_timeout, :browser_id_cookie_name, :cookie_domain,
+      :cookie_same_site, :default_controller_host
 
 
     def events
