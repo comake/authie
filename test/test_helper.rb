@@ -90,7 +90,7 @@ class FakeCookieJar
     @raw[key.to_sym] = value
   end
 
-  def delete(key)
+  def delete(key, options={})
     @raw.delete(key.to_sym)
   end
 end
