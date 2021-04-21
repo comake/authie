@@ -108,7 +108,9 @@ module Authie
         value: cookies[:user_session],
         secure: controller.request.ssl?,
         httponly: true,
-        expires: expires_at
+        expires: expires_at,
+        domain: Authie.config.cookie_domain,
+        same_site: Authie.config.cookie_same_site
       }
       Authie.config.events.dispatch(:parent_session_cookie_updated, self)
       true
@@ -118,7 +120,7 @@ module Authie
     def check_security!
       raise Authie::Error, 'Cannot check security without a controller' unless controller
 
-      if cookies[:browser_id] != browser_id
+      if cookies[Authie.config.browser_id_cookie_name] != browser_id
         invalidate!
         Authie.config.events.dispatch(:browser_id_mismatch_error, self)
         raise BrowserMismatch, 'Browser ID mismatch'
@@ -142,18 +144,7 @@ module Authie
         raise InactiveSession, 'Non-persistent session has expired'
       end
 
-      if self.host && self.host != (Authie.config.default_controller_host || controller.request.domain)
-        invalidate!
-        Authie.config.events.dispatch(:host_mismatch_error, self)
-        raise HostMismatch, "Session was created on #{self.host} but accessed using #{Authie.config.default_controller_host || controller.request.domain}"
-      end
-
       if host && host != (Authie.config.default_controller_host || controller.request.host)
-        p "invalidating session dues to host mismatch"
-        p self.host
-        p Authie.config.default_controller_host
-        p controller.request.domain
-
         invalidate!
         Authie.config.events.dispatch(:host_mismatch_error, self)
         raise HostMismatch, "Session was created on #{host} but accessed using #{(Authie.config.default_controller_host || controller.request.host)}"
@@ -263,7 +254,7 @@ module Authie
       parent.activate!
       parent.controller = controller
       parent.set_cookie!(cookies[:parent_user_session])
-      cookies.delete(:parent_user_session)
+      cookies.delete(:parent_user_session, domain: Authie.config.cookie_domain)
       parent
     end
 
@@ -310,7 +301,7 @@ module Authie
       session.browser_id = cookies[Authie.config.browser_id_cookie_name]
       session.login_at = Time.now
       session.login_ip = controller.request.ip
-      session.host = Authie.config.default_controller_host || controller.request.domain
+      session.host = Authie.config.default_controller_host || controller.request.host
       session.save!
       Authie.config.events.dispatch(:start_session, session)
       session
