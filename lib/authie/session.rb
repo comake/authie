@@ -93,7 +93,7 @@ module Authie
         value: value,
         secure: controller.request.ssl?,
         httponly: true,
-        expires: self.expires_at,
+        expires: expires_at,
         domain: Authie.config.cookie_domain,
         same_site: Authie.config.cookie_same_site
       }
